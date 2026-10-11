@@ -1,0 +1,7 @@
+datasets/
+models/
+*.pkl
+__pycache__/
+.ipynb_checkpoints/
+.venv/
+.DS_Store
