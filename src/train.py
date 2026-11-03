@@ -1,28 +1,19 @@
 """Train the final model and save it to models/"""
+import json
+
 import joblib
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.pipeline import Pipeline
 
 from src.data import PROJECT_ROOT, load_housing_data, split_data, split_features_labels
-from src.preprocessing import build_preprocessing
+from src.tune import BEST_MODEL_PATH, build_pipeline
 
 MODEL_PATH = PROJECT_ROOT / "models" / "housing_model.pkl"
 
-# best hyperparameters from the randomized search in the notebook
-BEST_PARAMS = {
-    "preprocessing__geo__n_clusters": 45,
-    "random_forest__max_features": 9,
-}
-
 
 def build_model():
-    """Return the full pipeline with the best hyperparameters."""
-    model = Pipeline([
-        ("preprocessing", build_preprocessing()),
-        ("random_forest", RandomForestRegressor(random_state=42)),
-    ])
-    model.set_params(**BEST_PARAMS)
-    return model
+    """Return the winning pipeline from results/best_model.json."""
+    best = json.loads(BEST_MODEL_PATH.read_text())
+    print(f"Building {best['experiment']} with {best['params']}")
+    return build_pipeline(best["experiment"], best["params"])
 
 
 def main():

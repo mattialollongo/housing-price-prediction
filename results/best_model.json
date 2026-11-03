@@ -1,0 +1,9 @@
+{
+  "experiment": "rf_book",
+  "params": {
+    "preprocessing__geo__n_clusters": 45,
+    "random_forest__max_features": 9
+  },
+  "cv10_rmse_mean": 41128.63083023946,
+  "cv10_rmse_std": 2837.897300589955
+}

@@ -1,0 +1,8 @@
+{
+  "model": "RandomForestRegressor",
+  "model_path": "models/housing_model.pkl",
+  "n_test_samples": 4128,
+  "test_rmse": 41423.082068461576,
+  "ci_95_lower": 39489.285756279205,
+  "ci_95_upper": 43666.167762484685
+}

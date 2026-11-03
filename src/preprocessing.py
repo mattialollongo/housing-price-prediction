@@ -29,6 +29,7 @@ class ClusterSimilarity(BaseEstimator, TransformerMixin):
 
 
 def column_ratio(X):
+    X = np.asarray(X)
     return X[:, [0]] / X[:, [1]]
 
 
@@ -72,7 +73,18 @@ def build_preprocessing():
         remainder=default_num_pipeline)
 
 
-def build_hgb_preprocessing(add_ratios=True):
+NUM_COLS = ["longitude", "latitude", "housing_median_age", "total_rooms",
+            "total_bedrooms", "population", "households", "median_income"]
+
+
+def build_hgb_preprocessing(add_ratios=True, add_clusters=False, n_clusters=10):
+    """Minimal preprocessing for the HGB: no imputer, scaler or log.
+
+    A: add_ratios=False, add_clusters=False
+    B: A + the three ratios
+    C: B + cluster similarity on latitude/longitude ("geo")
+    ocean_proximity is always output column 0 (categorical_features=[0]).
+    """
     transformers = [
         ("cat", OrdinalEncoder(handle_unknown="use_encoded_value",
                                unknown_value=-1), ["ocean_proximity"]),
@@ -83,4 +95,10 @@ def build_hgb_preprocessing(add_ratios=True):
                            ("people_per_house", ["population", "households"])]:
             transformers.append(
                 (name, FunctionTransformer(column_ratio, feature_names_out=ratio_name), cols))
-    return ColumnTransformer(transformers, remainder="passthrough")
+    if add_clusters:
+        transformers.append(
+            ("geo", ClusterSimilarity(n_clusters=n_clusters, gamma=1.0, random_state=42),
+             ["latitude", "longitude"]))
+    # explicit passthrough: the remainder would skip columns already used above
+    transformers.append(("num", "passthrough", NUM_COLS))
+    return ColumnTransformer(transformers)
