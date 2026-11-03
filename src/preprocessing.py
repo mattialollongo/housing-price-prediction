@@ -7,7 +7,7 @@ from sklearn.compose import ColumnTransformer, make_column_selector
 from sklearn.impute import SimpleImputer
 from sklearn.metrics.pairwise import rbf_kernel
 from sklearn.pipeline import make_pipeline
-from sklearn.preprocessing import FunctionTransformer, OneHotEncoder, StandardScaler
+from sklearn.preprocessing import FunctionTransformer, OrdinalEncoder, OneHotEncoder, StandardScaler
 
 
 class ClusterSimilarity(BaseEstimator, TransformerMixin):
@@ -70,3 +70,17 @@ def build_preprocessing():
         ("cat", cat_pipeline, make_column_selector(dtype_include=object)),
         ], 
         remainder=default_num_pipeline)
+
+
+def build_hgb_preprocessing(add_ratios=True):
+    transformers = [
+        ("cat", OrdinalEncoder(handle_unknown="use_encoded_value",
+                               unknown_value=-1), ["ocean_proximity"]),
+    ]
+    if add_ratios:
+        for name, cols in [("bedrooms", ["total_bedrooms", "total_rooms"]),
+                           ("rooms_per_house", ["total_rooms", "households"]),
+                           ("people_per_house", ["population", "households"])]:
+            transformers.append(
+                (name, FunctionTransformer(column_ratio, feature_names_out=ratio_name), cols))
+    return ColumnTransformer(transformers, remainder="passthrough")
